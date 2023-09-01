@@ -1,12 +1,12 @@
 import asyncio
 import threading
 from concurrent.futures import ThreadPoolExecutor
-from faker import Faker
 from playwright.async_api import async_playwright
 import nest_asyncio
+import random
+import getindianname as name
 
 nest_asyncio.apply()
-fake = Faker('en_IN')
 
 # Flag to indicate whether the script is running
 running = True
@@ -41,50 +41,51 @@ async def start(name, user, wait_time, meetingcode, passcode):
 
         try:
             query = '//button[text()="Join Audio by Computer"]'
-            mic_button_locator = await page.wait_for_selector(query, timeout=200000)
-            await mic_button_locator.wait_for_element_state('stable', timeout=200000)
+            await asyncio.sleep(13)
+            mic_button_locator = await page.wait_for_selector(query, timeout=350000)
+            await asyncio.sleep(10)
             await mic_button_locator.evaluate_handle('node => node.click()')
             print(f"{name} mic aayenge.")
         except Exception as e:
-            print(f"{name} mic nahe aayenge.")
+            print(f"{name} mic nahe aayenge. ", e)
 
         print(f"{name} sleep for {wait_time} seconds ...")
         while running and wait_time > 0:
-...             await asyncio.sleep(1)
-...             wait_time -= 1
-...         print(f"{name} ended!")
-... 
-...         await browser.close()
-... 
-... async def main():
-...     global running
-...     number = int(input("Enter number of Users: "))
-...     meetingcode = input("Enter meeting code (No Space): ")
-...     passcode = input("Enter Password (No Space): ")
-... 
-...     sec = 90
-...     wait_time = sec * 60
-... 
-...     with ThreadPoolExecutor(max_workers=number) as executor:
-...         loop = asyncio.get_running_loop()
-...         tasks = []
-...         for i in range(number):
-...             try:
-...                 user = fake.name()
-...             except IndexError:
-...                 break
-...             task = loop.create_task(start(f'[Thread{i}]', user, wait_time, meetingcode, passcode))
-...             tasks.append(task)
-...         try:
-...             await asyncio.gather(*tasks)
-...         except KeyboardInterrupt:
-...             running = False
-...             # Wait for tasks to complete
-...             await asyncio.gather(*tasks, return_exceptions=True)
-... 
-... if __name__ == '__main__':
-... 
-...   try:
-...     asyncio.run(main())
-...   except KeyboardInterrupt:
-...     pass
+            await asyncio.sleep(1)
+            wait_time -= 1
+        print(f"{name} ended!")
+
+        await browser.close()
+
+async def main():
+    global running
+    number = int(input("Enter number of Users: "))
+    meetingcode = input("Enter meeting code (No Space): ")
+    passcode = input("Enter Password (No Space): ")
+
+    sec = 90
+    wait_time = sec * 60
+
+    with ThreadPoolExecutor(max_workers=number) as executor:
+        loop = asyncio.get_running_loop()
+        tasks = []
+        for i in range(number):
+            try:
+                # Generate a random Indian name using getindianname
+                user = name.randname()
+            except IndexError:
+                break
+            task = loop.create_task(start(f'[Thread{i}]', user, wait_time, meetingcode, passcode))
+            tasks.append(task)
+        try:
+            await asyncio.gather(*tasks)
+        except KeyboardInterrupt:
+            running = False
+            # Wait for tasks to complete
+            await asyncio.gather(*tasks, return_exceptions=True)
+
+if __name__ == '__main__':
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        pass
