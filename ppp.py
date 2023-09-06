@@ -1,19 +1,4 @@
-import threading
-import time
-import warnings
-import getindianname as name  # Import getindianname as name
-from playwright.sync_api import sync_playwright
-
-warnings.filterwarnings('ignore')
-MUTEX = threading.Lock()
-
-
-def sync_print(text):
-    with MUTEX:
-        print(text)
-
-
-def start(name, wait_time, meetingcode, passcode):
+ef start(name, wait_time, meetingcode, passcode):
     sync_print(f"{name} started!")
 
     with sync_playwright() as p:
@@ -55,25 +40,3 @@ def start(name, wait_time, meetingcode, passcode):
         sync_print(f"{name} ended!")
 
         browser.close()
-
-
-def main():
-    sec = 90
-    wait_time = sec * 60
-    workers = []
-    for i in range(number):
-        wk = threading.Thread(target=start, args=(
-            f'[Thread{i}]', wait_time, meetingcode, passcode))
-        workers.append(wk)
-    for wk in workers:
-        wk.start()
-    for wk in workers:
-        wk.join()
-
-
-if __name__ == '__main__':
-    number = int(input("Enter number of Users: "))
-    meetingcode = input("Enter meeting code (No Space): ")
-    passcode = input("Enter Password (No Space): ")
-
-    main()
