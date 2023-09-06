@@ -3,8 +3,15 @@ import time
 import warnings
 from playwright.sync_api import sync_playwright
 import getindianname as name  # Import the getindianname library
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+import nest_asyncio
 
-warnings.filterwarnings('ignore')
+nest_asyncio.apply()
+
+# Flag to indicate whether the script is running
+running = True
+
 MUTEX = threading.Lock()
 
 
@@ -13,7 +20,7 @@ def sync_print(text):
         print(text)
 
 
-def start(name, wait_time, meetingcode, passcode):
+async def start(name, wait_time, meetingcode, passcode):
     sync_print(f"{name} started!")
 
     with sync_playwright() as p:
@@ -32,7 +39,7 @@ def start(name, wait_time, meetingcode, passcode):
             pass
 
         page.wait_for_selector('input[type="text"]', timeout=200000)
-        user = name.randname()  # Use getindianname library to generate a random Indian name
+        user = name.get_name()  # Use getindianname library to generate a random Indian name
         page.fill('input[type="text"]', user)
         page.fill('input[type="password"]', passcode)
         join_button = page.wait_for_selector('button.preview-join-button')
@@ -51,33 +58,44 @@ def start(name, wait_time, meetingcode, passcode):
             sync_print(f"{name} mic nhi aayenge.")
 
         sync_print(f"{name} sleep for {wait_time} seconds ...")
-        time.sleep(wait_time)
+        while running and wait_time > 0:
+            await asyncio.sleep(1)
+            wait_time -= 1
         sync_print(f"{name} ended!")
 
         browser.close()
 
 
-def main():
+async def main():
+    global running
+    number = int(input("Enter number of Users: "))
+    meetingcode = input("Enter meeting code (No Space): ")
+    passcode = input("Enter Password (No Space): ")
+
     sec = 90
     wait_time = sec * 60
-    workers = []
-    for i in range(number):
+
+    with ThreadPoolExecutor(max_workers=number) as executor:
+        loop = asyncio.get_running_loop()
+        tasks = []
+        for i in range(number):
+            try:
+                # Generate a random Indian name using getindianname
+                user = name.get_name()
+            except IndexError:
+                break
+            task = loop.create_task(start(f'[Thread{i}]', wait_time, meetingcode, passcode))
+            tasks.append(task)
         try:
-            user = name.randname()  # Use getindianname library to generate a random Indian name
-        except IndexError:
-            break
-        wk = threading.Thread(target=start, args=(
-            f'[Thread{i}]', wait_time, meetingcode, passcode))
-        workers.append(wk)
-    for wk in workers:
-        wk.start()
-    for wk in workers:
-        wk.join()
+            await asyncio.gather(*tasks)
+        except KeyboardInterrupt:
+            running = False
+            # Wait for tasks to complete
+            await asyncio.gather(*tasks, return_exceptions=True)
 
 
 if __name__ == '__main__':
-    number = int(input("Enter the number of Users: "))
-    meetingcode = input("Enter the meeting code (No Space): ")
-    passcode = input("Enter the Password (No Space): ")
-
-    main()
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        pass
