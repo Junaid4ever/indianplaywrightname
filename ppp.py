@@ -1,8 +1,8 @@
 import threading
 import time
 import warnings
-import name  # Import getindianname library
 from playwright.sync_api import sync_playwright
+import getindianname as name  # Import the getindianname library
 
 warnings.filterwarnings('ignore')
 MUTEX = threading.Lock()
@@ -76,8 +76,8 @@ def main():
 
 
 if __name__ == '__main__':
-    number = int(input("Enter number of Users: "))
-    meetingcode = input("Enter meeting code (No Space): ")
-    passcode = input("Enter Password (No Space): ")
+    number = int(input("Enter the number of Users: "))
+    meetingcode = input("Enter the meeting code (No Space): ")
+    passcode = input("Enter the Password (No Space): ")
 
     main()
