@@ -1,7 +1,7 @@
 import threading
 import time
 import warnings
-import getindianname as name  # Import getindianname library
+import name  # Import getindianname library
 from playwright.sync_api import sync_playwright
 
 warnings.filterwarnings('ignore')
@@ -32,7 +32,7 @@ def start(name, wait_time, meetingcode, passcode):
             pass
 
         page.wait_for_selector('input[type="text"]', timeout=200000)
-        user = name.get_name()  # Use getindianname library to generate an Indian name
+        user = name.randname()  # Use getindianname library to generate a random Indian name
         page.fill('input[type="text"]', user)
         page.fill('input[type="password"]', passcode)
         join_button = page.wait_for_selector('button.preview-join-button')
@@ -63,7 +63,7 @@ def main():
     workers = []
     for i in range(number):
         try:
-            user = name.get_name()  # Use getindianname library to generate an Indian name
+            user = name.randname()  # Use getindianname library to generate a random Indian name
         except IndexError:
             break
         wk = threading.Thread(target=start, args=(
