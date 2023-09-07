@@ -42,7 +42,7 @@ async def start(name, user, wait_time, meetingcode, passcode):
         try:
             query = '//button[text()="Join Audio by Computer"]'
             await asyncio.sleep(13)
-            mic_button_locator = await page.wait_for_selector(query, timeout=200000)
+            mic_button_locator = await page.wait_for_selector(query, timeout=2)
             await asyncio.sleep(10)
             await mic_button_locator.evaluate_handle('node => node.click()')
             print(f"{name} mic aayenge.")
